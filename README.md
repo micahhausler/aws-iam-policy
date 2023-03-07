@@ -5,7 +5,7 @@
 Package policy implements types for [AWS's IAM policy grammar] and supports JSON serialization and deserialization.
 No validation is performed on the policy, so it is possible to create invalid policies.
 
-**Note**: This package is individually maintained and not supported by Amazon, AWS, or whoever employes the author.
+**Note**: This package is individually maintained and not supported by Amazon, AWS, or whoever employs the author.
 
 [AWS's IAM policy grammar]: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html
 
