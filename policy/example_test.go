@@ -15,7 +15,7 @@ func Example_newBucketPolicy() {
 		Statements: []policy.Statement{
 			{
 				Sid:       "AWSCloudTrailWrite20150319",
-				Effect:    "Allow",
+				Effect:    policy.EffectAllow,
 				Principal: policy.NewServicePrincipal("cloudtrail.amazonaws.com"),
 				Action:    policy.NewStringOrSlice(false, "s3:PutObject"),
 				Resource:  policy.NewStringOrSlice(false, "arn:aws:s3:::examplebucket/AWSLogs/123456789012/*"),
@@ -27,7 +27,7 @@ func Example_newBucketPolicy() {
 			},
 			{
 				Sid:       "AWSCloudTrailAclCheck20150319",
-				Effect:    "Allow",
+				Effect:    policy.EffectAllow,
 				Principal: policy.NewServicePrincipal("cloudtrail.amazonaws.com"),
 				Action:    policy.NewStringOrSlice(true, "s3:GetBucketAcl"),
 				Resource:  policy.NewStringOrSlice(true, "arn:aws:s3:::examplebucket"),
