@@ -1,0 +1,668 @@
+[
+  {
+    "Id": "MyAccountOnlyNotAction",
+    "Statement": [
+      {
+        "Sid": "AllowAccessToResourcesInSpecificAccountsAndSpecificService1",
+        "Effect": "Deny",
+        "NotAction": [
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",
+          "iam:ListEntitiesForPolicy",
+          "iam:ListPolicies"
+        ],
+        "Resource": "*",
+        "Condition": {
+          "StringNotEquals": {
+            "aws:ResourceAccount": [
+              "111122223333"
+            ]
+          }
+        }
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "MyAccountOnlyNotPrincipal",
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Deny",
+        "NotPrincipal": {
+          "AWS": [
+            "arn:aws:iam::444455556666:user/Bob",
+            "arn:aws:iam::444455556666:root"
+          ]
+        },
+        "Action": "s3:*",
+        "Resource": [
+          "arn:aws:s3:::BUCKETNAME",
+          "arn:aws:s3:::BUCKETNAME/*"
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "PutObjPolicy",
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "Null": {
+            "s3:x-amz-server-side-encryption-aws-kms-key-id": "true"
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "DenyObjectsThatAreNotSSEKMS"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "PutObjPolicy",
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "ArnNotEqualsIfExists": {
+            "s3:x-amz-server-side-encryption-aws-kms-key-id": "arn:aws:kms:us-east-2:111122223333:key/01234567-89ab-cdef-0123-456789abcdef"
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "DenyObjectsThatAreNotSSEKMSWithSpecificKey"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": [
+          "s3:PutObject",
+          "s3:PutObjectAcl"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "s3:x-amz-acl": [
+              "public-read"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:root",
+            "arn:aws:iam::444455556666:root"
+          ]
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "AddPublicReadCannedAcl"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "StringEquals": {
+            "s3:x-amz-acl": "bucket-owner-full-control"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "111122223333"
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "PolicyForAllowUploadWithACL"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": [
+          "s3:GetObject",
+          "s3:GetObjectVersion"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "s3:ExistingObjectTag/environment": "production"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:role/JohnDoe"
+          ]
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": [
+          "s3:PutObjectTagging"
+        ],
+        "Condition": {
+          "ForAnyValue:StringEquals": {
+            "s3:RequestObjectTagKeys": [
+              "Owner",
+              "CreationDate"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:role/JohnDoe"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*"
+        ]
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": [
+          "s3:PutObjectTagging"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "s3:RequestObjectTag/Project": "X"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/JohnDoe"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*"
+        ]
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": [
+          "s3:PutObject"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "s3:RequestObjectTag/Department": "Finance"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/JohnDoe"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*"
+        ]
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "ArnLike": {
+            "aws:SourceArn": "arn:aws:s3:::EXAMPLE-SOURCE-BUCKET"
+          },
+          "StringEquals": {
+            "aws:SourceAccount": "111111111111"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "logging.s3.amazonaws.com"
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET-logs/*",
+        "Sid": "AllowPutObjectS3ServerAccessLogsPolicy"
+      },
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "ForAllValues:StringNotEquals": {
+            "aws:PrincipalServiceNamesList": "logging.s3.amazonaws.com"
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET-logs/*",
+        "Sid": "RestrictToS3ServerAccessLogs"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:GetObject",
+        "Condition": {
+          "StringEquals": {
+            "aws:PrincipalOrgID": [
+              "o-aa111bb222"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "*"
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "AllowGetObject"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "S3PolicyId1",
+    "Statement": [
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "NotIpAddress": {
+            "aws:SourceIp": "192.0.2.0/24"
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET",
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET1/*"
+        ],
+        "Sid": "IPAllow"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "PolicyId2",
+    "Statement": [
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "IpAddress": {
+            "aws:SourceIp": [
+              "192.0.2.0/24",
+              "2001:DB8:1234:5678::/64"
+            ]
+          },
+          "NotIpAddress": {
+            "aws:SourceIp": [
+              "203.0.113.0/24",
+              "2001:DB8:1234:5678:ABCD::/80"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": "*",
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET",
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET1/*"
+        ],
+        "Sid": "AllowIPmix"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "Bool": {
+            "aws:SecureTransport": "false"
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET",
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET1/*"
+        ],
+        "Sid": "RestrictToTLSRequestsOnly"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "HTTP referer policy example",
+    "Statement": [
+      {
+        "Action": [
+          "s3:GetObject",
+          "s3:GetObjectVersion"
+        ],
+        "Condition": {
+          "StringLike": {
+            "aws:Referer": [
+              "http://www.example.com/*",
+              "http://example.com/*"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "Allow only GET requests originating from www.example.com and example.com."
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": [
+          "s3:ListBucket"
+        ],
+        "Condition": {
+          "StringEquals": {
+            "s3:delimiter": [
+              "/"
+            ],
+            "s3:prefix": [
+              "",
+              "home/",
+              "home/JohnDoe"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/JohnDoe"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET"
+        ],
+        "Sid": "AllowRootAndHomeListingOfCompanyBucket"
+      },
+      {
+        "Action": [
+          "s3:ListBucket"
+        ],
+        "Condition": {
+          "StringLike": {
+            "s3:prefix": [
+              "home/JohnDoe/*"
+            ]
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/JohnDoe"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET"
+        ],
+        "Sid": "AllowListingOfUserFolder"
+      },
+      {
+        "Action": [
+          "s3:*"
+        ],
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/JohnDoe"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-BUCKET/home/JohnDoe/*"
+        ],
+        "Sid": "AllowAllS3ActionsInUserFolder"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::elb-account-id:root"
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET1/prefix/AWSLogs/111122223333/*"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "logdelivery.elasticloadbalancing.amazonaws.com"
+        },
+        "Resource": "arn:aws:s3::DOC-EXAMPLE-BUCKET/prefix/AWSLogs/111122223333/*"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "PolicyForCloudFrontPrivateContent",
+    "Statement": [
+      {
+        "Action": "s3:GetObject",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity EH1HDMB1FH2TC"
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "StringEquals": {
+            "aws:SourceAccount": "111122223333",
+            "aws:SourceArn": "arn:aws:s3:region-code:111122223333:storage-lens/storage-lens-dashboard-configuration-id",
+            "s3:x-amz-acl": "bucket-owner-full-control"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "storage-lens.s3.amazonaws.com"
+        },
+        "Resource": [
+          "arn:aws:s3:::destination-bucket/destination-prefix/StorageLens/111122223333/*"
+        ],
+        "Sid": "S3StorageLensExamplePolicy"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Statement": [
+      {
+        "Action": "s3:PutObject",
+        "Condition": {
+          "ArnLike": {
+            "aws:SourceArn": "arn:aws:s3:::DOC-EXAMPLE-SOURCE-BUCKET"
+          },
+          "StringEquals": {
+            "aws:SourceAccount": "111122223333",
+            "s3:x-amz-acl": "bucket-owner-full-control"
+          }
+        },
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "s3.amazonaws.com"
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-DESTINATION-BUCKET/*"
+        ],
+        "Sid": "InventoryAndAnalyticsExamplePolicy"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "GetObjectPolicy",
+    "Statement": [
+      {
+        "Action": [
+          "s3:ListBucket"
+        ],
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/Ana"
+          ]
+        },
+        "Resource": [
+          "arn:aws:s3:::DOC-EXAMPLE-DESTINATION-BUCKET",
+          "arn:aws:s3:::DOC-EXAMPLE-DESTINATION-BUCKET/*"
+        ],
+        "Sid": "AllowListBucket"
+      },
+      {
+        "Action": [
+          "s3:GetObject"
+        ],
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": [
+            "arn:aws:iam::111122223333:user/Ana"
+          ]
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-DESTINATION-BUCKET/DOC-EXAMPLE-DESTINATION-BUCKET-INVENTORY/*",
+        "Sid": "AllowACertainUserToReadObject"
+      },
+      {
+        "Action": [
+          "s3:GetObject"
+        ],
+        "Condition": {
+          "ArnNotEquals": {
+            "aws:PrincipalArn": "arn:aws:iam::111122223333:user/Ana"
+          }
+        },
+        "Effect": "Deny",
+        "Principal": {
+          "AWS": "*"
+        },
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-DESTINATION-BUCKET/DOC-EXAMPLE-DESTINATION-BUCKET-INVENTORY/*",
+        "Sid": "DenyAllTheOtherUsersToReadObject"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "RequireMFAForBucketAccess",
+    "Statement": [
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "Null": {
+            "aws:MultiFactorAuthAge": true
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/taxdocuments/*",
+        "Sid": "sid1"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "MultiFactorAuthAge",
+    "Statement": [
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "Null": {
+            "aws:MultiFactorAuthAge": true
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/taxdocuments/*",
+        "Sid": "sid1"
+      },
+      {
+        "Action": [
+          "s3:GetObject"
+        ],
+        "Effect": "Allow",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "sid1"
+      }
+    ],
+    "Version": "2012-10-17"
+  },
+  {
+    "Id": "MultiFactorAuthAge1Hour",
+    "Statement": [
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "NumericGreaterThan": {
+            "aws:MultiFactorAuthAge": 3600
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/taxdocuments/*",
+        "Sid": "sid1"
+      },
+      {
+        "Action": "s3:*",
+        "Condition": {
+          "Null": {
+            "aws:MultiFactorAuthAge": true
+          }
+        },
+        "Effect": "Deny",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/taxdocuments/*",
+        "Sid": "sid1"
+      },
+      {
+        "Action": [
+          "s3:GetObject"
+        ],
+        "Effect": "Allow",
+        "Principal": "*",
+        "Resource": "arn:aws:s3:::DOC-EXAMPLE-BUCKET/*",
+        "Sid": "sid1"
+      }
+    ],
+    "Version": "2012-10-17"
+  }
+]
