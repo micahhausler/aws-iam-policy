@@ -9,42 +9,41 @@ func TestNewPrincipal(t *testing.T) {
 		name       string
 		in         *Principal
 		want       string
-		wantKind   string
+		wantKinds  []string
 		wantValues []string
 	}{
 		{
-			name:       "All",
-			in:         NewGlobalPrincipal(),
-			want:       `"*"`,
-			wantKind:   PrincipalKindAll,
-			wantValues: []string{PrincipalAll},
+			name:      "All",
+			in:        NewGlobalPrincipal(),
+			want:      `"*"`,
+			wantKinds: []string{PrincipalKindAll},
 		},
 		{
 			name:       "AWS",
 			in:         NewAWSPrincipal("arn:aws:iam::123456789012:root"),
 			want:       `{"AWS":"arn:aws:iam::123456789012:root"}`,
-			wantKind:   PrincipalKindAWS,
+			wantKinds:  []string{PrincipalKindAWS},
 			wantValues: []string{"arn:aws:iam::123456789012:root"},
 		},
 		{
 			name:       "CanonicalUser",
 			in:         NewCanonicalUserPrincipal("e01ebb0e05f2b447b372b56ced947c1a89bfe77ba79896972ff49ddfdbd0ecdd"),
 			want:       `{"CanonicalUser":"e01ebb0e05f2b447b372b56ced947c1a89bfe77ba79896972ff49ddfdbd0ecdd"}`,
-			wantKind:   PrincipalKindCanonical,
+			wantKinds:  []string{PrincipalKindCanonical},
 			wantValues: []string{"e01ebb0e05f2b447b372b56ced947c1a89bfe77ba79896972ff49ddfdbd0ecdd"},
 		},
 		{
 			name:       "Federated",
 			in:         NewFederatedPrincipal("arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B716D3041E"),
 			want:       `{"Federated":"arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B716D3041E"}`,
-			wantKind:   PrincipalKindFederated,
+			wantKinds:  []string{PrincipalKindFederated},
 			wantValues: []string{"arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/EXAMPLED539D4633E53DE1B716D3041E"},
 		},
 		{
 			name:       "Services",
 			in:         NewServicePrincipal("s3.amazonaws.com"),
 			want:       `{"Service":"s3.amazonaws.com"}`,
-			wantKind:   PrincipalKindService,
+			wantKinds:  []string{PrincipalKindService},
 			wantValues: []string{"s3.amazonaws.com"},
 		},
 	}
@@ -58,17 +57,53 @@ func TestNewPrincipal(t *testing.T) {
 			if string(got) != tc.want {
 				t.Errorf("got '%s', want '%s'", string(got), tc.want)
 			}
-			if tc.in.Kind() != tc.wantKind {
-				t.Errorf("got '%s', want '%s'", tc.in.Kind(), tc.wantKind)
+			if len(tc.in.Kinds()) != len(tc.wantKinds) {
+				t.Errorf("got '%s', want '%s'", tc.in.Kinds(), tc.wantKinds)
 			}
-			if len(tc.in.Values()) != len(tc.wantValues) {
-				t.Errorf("got '%d', want '%d'", len(tc.in.Values()), len(tc.wantValues))
-			}
-			for i, v := range tc.in.Values() {
-				if v != tc.wantValues[i] {
-					t.Errorf("got '%s', want '%s'", v, tc.wantValues[i])
+			for i, k := range tc.in.Kinds() {
+				if k != tc.wantKinds[i] {
+					t.Errorf("got '%s', want '%s'", k, tc.wantKinds[i])
+				}
+				switch k {
+				case PrincipalKindAWS:
+					if len(tc.in.AWS().Values()) != len(tc.wantValues) {
+						t.Errorf("got '%d', want '%d'", len(tc.in.AWS().Values()), len(tc.wantValues[i]))
+					}
+					for _, v := range tc.in.AWS().Values() {
+						if v != tc.wantValues[i] {
+							t.Errorf("got '%s', want '%s'", v, tc.wantValues)
+						}
+					}
+				case PrincipalKindCanonical:
+					if len(tc.in.CanonicalUser().Values()) != len(tc.wantValues) {
+						t.Errorf("got '%d', want '%d'", len(tc.in.CanonicalUser().Values()), len(tc.wantValues))
+					}
+					for _, v := range tc.in.CanonicalUser().Values() {
+						if v != tc.wantValues[i] {
+							t.Errorf("got '%s', want '%s'", v, tc.wantValues)
+						}
+					}
+				case PrincipalKindFederated:
+					if len(tc.in.Federated().Values()) != len(tc.wantValues) {
+						t.Errorf("got '%d', want '%d'", len(tc.in.Federated().Values()), len(tc.wantValues))
+					}
+					for _, v := range tc.in.Federated().Values() {
+						if v != tc.wantValues[i] {
+							t.Errorf("got '%s', want '%s'", v, tc.wantValues)
+						}
+					}
+				case PrincipalKindService:
+					if len(tc.in.Service().Values()) != len(tc.wantValues) {
+						t.Errorf("got '%d', want '%d'", len(tc.in.Service().Values()), len(tc.wantValues))
+					}
+					for _, v := range tc.in.Service().Values() {
+						if v != tc.wantValues[i] {
+							t.Errorf("got '%s', want '%s'", v, tc.wantValues)
+						}
+					}
 				}
 			}
+
 		})
 	}
 }
@@ -209,4 +244,39 @@ func TestPrincipalAdd(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPrincipalNullAccessor(t *testing.T) {
+	cases := []struct {
+		name string
+		in   *Principal
+		want *StringOrSlice
+	}{
+		{
+			name: "Global",
+			in:   NewGlobalPrincipal(),
+			want: nil,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.in.AWS()
+			if got != tc.want {
+				t.Errorf("got '%v', want '%v'", got, tc.want)
+			}
+			got = tc.in.Service()
+			if got != tc.want {
+				t.Errorf("got '%v', want '%v'", got, tc.want)
+			}
+			got = tc.in.Federated()
+			if got != tc.want {
+				t.Errorf("got '%v', want '%v'", got, tc.want)
+			}
+			got = tc.in.CanonicalUser()
+			if got != tc.want {
+				t.Errorf("got '%v', want '%v'", got, tc.want)
+			}
+		})
+	}
+
 }

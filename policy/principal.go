@@ -124,34 +124,57 @@ func (p *Principal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.principal)
 }
 
-// Kind returns the kind of the Principal.
-func (p *Principal) Kind() string {
+// Kinds returns the kinds of the Principal.
+func (p *Principal) Kinds() []string {
 	if p.str != "" {
-		return PrincipalKindAll
+		return []string{PrincipalKindAll}
 	}
+	resp := []string{}
 	if p.principal.AWS != nil {
-		return PrincipalKindAWS
-	} else if p.principal.CanonicalUser != nil {
-		return PrincipalKindCanonical
-	} else if p.principal.Federated != nil {
-		return PrincipalKindFederated
+		resp = append(resp, PrincipalKindAWS)
 	}
-	return PrincipalKindService
+	if p.principal.CanonicalUser != nil {
+		resp = append(resp, PrincipalKindCanonical)
+	}
+	if p.principal.Federated != nil {
+		resp = append(resp, PrincipalKindFederated)
+	}
+	if p.principal.Service != nil {
+		resp = append(resp, PrincipalKindService)
+	}
+	return resp
 }
 
-// Values returns the values of the Principal.
-func (p *Principal) Values() []string {
-	if p.str != "" {
-		return []string{p.str}
+// AWS returns the AWS accounts of the Principal.
+func (p *Principal) AWS() *StringOrSlice {
+	if p.principal == nil {
+		return nil
 	}
-	if p.principal.AWS != nil {
-		return p.principal.AWS.Values()
-	} else if p.principal.CanonicalUser != nil {
-		return p.principal.CanonicalUser.Values()
-	} else if p.principal.Federated != nil {
-		return p.principal.Federated.Values()
+	return p.principal.AWS
+}
+
+// CanonicalUser returns the canonical users of the Principal.
+func (p *Principal) CanonicalUser() *StringOrSlice {
+	if p.principal == nil {
+		return nil
 	}
-	return p.principal.Service.Values()
+	return p.principal.CanonicalUser
+}
+
+// Federated returns the federated users of the Principal.
+func (p *Principal) Federated() *StringOrSlice {
+	if p.principal == nil {
+		return nil
+	}
+	return p.principal.Federated
+}
+
+// Service returns the services of the Principal.
+func (p *Principal) Service() *StringOrSlice {
+	if p.principal == nil {
+		return nil
+	}
+	return p.principal.Service
 }
 
 // principal is a json-serializable type in a policy document.
