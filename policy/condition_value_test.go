@@ -233,3 +233,95 @@ func TestConditionValueValues(t *testing.T) {
 		})
 	}
 }
+
+func TestConditionValueAdd(t *testing.T) {
+	cases := []struct {
+		name     string
+		in       *ConditionValue
+		addStr   []string
+		addFloat []float64
+		addBool  []bool
+		wantErr  error
+	}{
+		{
+			name:    "AddStringSuccess",
+			in:      NewConditionValueString(true, "test"),
+			addStr:  []string{"test2"},
+			wantErr: nil,
+		},
+		{
+			name:    "AddStringFailHasBool",
+			in:      NewConditionValueBool(true, true),
+			addStr:  []string{"test2"},
+			wantErr: errors.New("Cannot add strings, ConditionValue has existing bools"),
+		},
+		{
+			name:    "AddStringFailHasFloat",
+			in:      NewConditionValueFloat(true, 123),
+			addStr:  []string{"test2"},
+			wantErr: errors.New("Cannot add strings, ConditionValue has existing floats"),
+		},
+		{
+			name:     "AddFloatSuccess",
+			in:       NewConditionValueFloat(true, 123),
+			addFloat: []float64{456},
+			wantErr:  nil,
+		},
+		{
+			name:     "AddFloatFailHasBool",
+			in:       NewConditionValueBool(true, true),
+			addFloat: []float64{456},
+			wantErr:  errors.New("Cannot add floats, ConditionValue has existing bools"),
+		},
+		{
+			name:     "AddFloatFailHasString",
+			in:       NewConditionValueString(true, "test"),
+			addFloat: []float64{456},
+			wantErr:  errors.New("Cannot add floats, ConditionValue has existing strings"),
+		},
+		{
+			name:    "AddBoolSuccess",
+			in:      NewConditionValueBool(true, true),
+			addBool: []bool{false},
+			wantErr: nil,
+		},
+		{
+			name:    "AddBoolFailHasFloat",
+			in:      NewConditionValueFloat(true, 123),
+			addBool: []bool{false},
+			wantErr: errors.New("Cannot add bools, ConditionValue has existing floats"),
+		},
+		{
+			name:    "AddBoolFailHasString",
+			in:      NewConditionValueString(true, "test"),
+			addBool: []bool{false},
+			wantErr: errors.New("Cannot add bools, ConditionValue has existing strings"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var err error
+			if len(tc.addStr) != 0 {
+				err = tc.in.AddString(tc.addStr...)
+			} else if len(tc.addFloat) != 0 {
+				err = tc.in.AddFloat(tc.addFloat...)
+			} else if len(tc.addBool) != 0 {
+				err = tc.in.AddBool(tc.addBool...)
+			}
+
+			if err == nil && tc.wantErr != nil {
+				t.Fatalf("expected error, got nil")
+			}
+			if err != nil && tc.wantErr == nil {
+				t.Fatalf("got error, expected nil")
+			}
+			if err != nil && tc.wantErr != nil {
+				if err.Error() != tc.wantErr.Error() {
+					t.Errorf("got '%s', want '%s'", err.Error(), tc.wantErr.Error())
+				}
+			}
+		})
+	}
+
+}

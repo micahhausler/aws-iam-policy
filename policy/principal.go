@@ -14,28 +14,40 @@ const (
 
 // Principal is a Principal in a policy document.
 type Principal struct {
-	principal principal
+	principal *principal
 	str       string
 }
 
 // AddService adds one or more services to the Principal.
 func (p *Principal) AddService(service ...string) {
-	p.principal.Service.Add(service...)
+	if p.principal == nil {
+		p.principal = &principal{}
+	}
+	p.principal.AddService(service...)
 }
 
 // AddAWS adds one or more AWS accounts to the Principal.
 func (p *Principal) AddAWS(aws ...string) {
-	p.principal.AWS.Add(aws...)
+	if p.principal == nil {
+		p.principal = &principal{}
+	}
+	p.principal.AddAWS(aws...)
 }
 
 // AddCanonicalUser adds one or more canonical users to the Principal.
 func (p *Principal) AddCanonicalUser(canonicalUser ...string) {
-	p.principal.CanonicalUser.Add(canonicalUser...)
+	if p.principal == nil {
+		p.principal = &principal{}
+	}
+	p.principal.AddCanonicalUser(canonicalUser...)
 }
 
 // AddFederated adds one or more federated users to the Principal.
 func (p *Principal) AddFederated(federated ...string) {
-	p.principal.Federated.Add(federated...)
+	if p.principal == nil {
+		p.principal = &principal{}
+	}
+	p.principal.AddFederated(federated...)
 }
 
 func newPrincipalFromString(s string) *Principal {
@@ -52,7 +64,7 @@ func NewGlobalPrincipal() *Principal {
 // NewServicePrincipal creates a new Principal that matches a service.
 func NewServicePrincipal(service ...string) *Principal {
 	return &Principal{
-		principal: principal{
+		principal: &principal{
 			Service: NewStringOrSlice(true, service...),
 		},
 	}
@@ -61,7 +73,7 @@ func NewServicePrincipal(service ...string) *Principal {
 // NewAWSPrincipal creates a new Principal that matches an AWS account.
 func NewAWSPrincipal(aws ...string) *Principal {
 	return &Principal{
-		principal: principal{
+		principal: &principal{
 			AWS: NewStringOrSlice(true, aws...),
 		},
 	}
@@ -70,7 +82,7 @@ func NewAWSPrincipal(aws ...string) *Principal {
 // NewCanonicalUserPrincipal creates a new Principal that matches a canonical user.
 func NewCanonicalUserPrincipal(canonicalUser ...string) *Principal {
 	return &Principal{
-		principal: principal{
+		principal: &principal{
 			CanonicalUser: NewStringOrSlice(true, canonicalUser...),
 		},
 	}
@@ -79,7 +91,7 @@ func NewCanonicalUserPrincipal(canonicalUser ...string) *Principal {
 // NewFederatedPrincipal creates a new Principal that matches a federated user.
 func NewFederatedPrincipal(federated ...string) *Principal {
 	return &Principal{
-		principal: principal{
+		principal: &principal{
 			Federated: NewStringOrSlice(true, federated...),
 		},
 	}
@@ -96,8 +108,8 @@ func (p *Principal) UnmarshalJSON(data []byte) error {
 		p.str = str
 		return nil
 	}
-	principal := principal{}
-	err = json.Unmarshal(data, &principal)
+	principal := &principal{}
+	err = json.Unmarshal(data, principal)
 	if err != nil {
 		return err
 	}
@@ -150,7 +162,31 @@ type principal struct {
 	Service       *StringOrSlice `json:"Service,omitempty"`
 }
 
-func (p *principal) AddAWS(aws ...string)                     { p.AWS.Add(aws...) }
-func (p *principal) AddCanonicalUser(canonicalUser ...string) { p.CanonicalUser.Add(canonicalUser...) }
-func (p *principal) AddFederated(federated ...string)         { p.Federated.Add(federated...) }
-func (p *principal) AddService(service ...string)             { p.Service.Add(service...) }
+func (p *principal) AddAWS(aws ...string) {
+	if p.AWS == nil {
+		p.AWS = NewStringOrSlice(true, aws...)
+		return
+	}
+	p.AWS.Add(aws...)
+}
+func (p *principal) AddCanonicalUser(canonicalUser ...string) {
+	if p.CanonicalUser == nil {
+		p.CanonicalUser = NewStringOrSlice(true, canonicalUser...)
+		return
+	}
+	p.CanonicalUser.Add(canonicalUser...)
+}
+func (p *principal) AddFederated(federated ...string) {
+	if p.Federated == nil {
+		p.Federated = NewStringOrSlice(true, federated...)
+		return
+	}
+	p.Federated.Add(federated...)
+}
+func (p *principal) AddService(service ...string) {
+	if p.Service == nil {
+		p.Service = NewStringOrSlice(true, service...)
+		return
+	}
+	p.Service.Add(service...)
+}
