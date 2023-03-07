@@ -52,6 +52,51 @@ type ConditionValue struct {
 	singular   bool
 }
 
+// AddStrings adds a slice of strings to the ConditionValue. If the
+// ConditionValue already has bools or floats, an error is returned.
+func (c *ConditionValue) AddString(values ...string) error {
+	if len(c.boolValues) > 0 {
+		return errors.New("Cannot add strings, ConditionValue has existing bools")
+	} else if len(c.numValues) > 0 {
+		return errors.New("Cannot add strings, ConditionValue has existing floats")
+	}
+	c.strValues = append(c.strValues, values...)
+	if len(c.strValues) > 1 {
+		c.singular = false
+	}
+	return nil
+}
+
+// AddBool adds a slice of bools to the ConditionValue. If the
+// ConditionValue already has strings or floats, an error is returned.
+func (c *ConditionValue) AddBool(values ...bool) error {
+	if len(c.strValues) > 0 {
+		return errors.New("Cannot add bools, ConditionValue has existing strings")
+	} else if len(c.numValues) > 0 {
+		return errors.New("Cannot add bools, ConditionValue has existing floats")
+	}
+	c.boolValues = append(c.boolValues, values...)
+	if len(c.boolValues) > 1 {
+		c.singular = false
+	}
+	return nil
+}
+
+// AddFloat adds a slice of floats to the ConditionValue. If the
+// ConditionValue already has strings or bools, an error is returned.
+func (c *ConditionValue) AddFloat(values ...float64) error {
+	if len(c.strValues) > 0 {
+		return errors.New("Cannot add floats, ConditionValue has existing strings")
+	} else if len(c.boolValues) > 0 {
+		return errors.New("Cannot add floats, ConditionValue has existing bools")
+	}
+	c.numValues = append(c.numValues, values...)
+	if len(c.numValues) > 1 {
+		c.singular = false
+	}
+	return nil
+}
+
 func (c *ConditionValue) UnmarshalJSON(data []byte) error {
 	var tmp interface{}
 	err := json.Unmarshal(data, &tmp)

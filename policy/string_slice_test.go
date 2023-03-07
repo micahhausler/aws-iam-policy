@@ -131,3 +131,39 @@ func TestInvalidStringSliceJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestStringOrSliceAdd(t *testing.T) {
+	cases := []struct {
+		name string
+		in   *StringOrSlice
+		add  []string
+		want []string
+	}{
+
+		{
+			name: "Singular",
+			in:   NewStringOrSlice(true, "arn:aws:iam::123456789012:root"),
+			add:  []string{"arn:aws:iam::123456789012:root"},
+			want: []string{"arn:aws:iam::123456789012:root", "arn:aws:iam::123456789012:root"},
+		},
+		{
+			name: "Empty",
+			in:   NewStringOrSlice(false, "arn:aws:iam::123456789012:root"),
+			add:  []string{},
+			want: []string{"arn:aws:iam::123456789012:root"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.in.Add(tc.add...)
+			if len(tc.in.Values()) != len(tc.want) {
+				t.Fatalf("got '%d', want '%d'", len(tc.in.Values()), len(tc.want))
+			}
+			for i, v := range tc.in.Values() {
+				if v != tc.want[i] {
+					t.Fatalf("got '%s', want '%s'", v, tc.want[i])
+				}
+			}
+		})
+	}
+}
