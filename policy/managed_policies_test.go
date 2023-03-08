@@ -20,7 +20,7 @@ func TestManagedPolicies(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if d.IsDir() {
+		if d.IsDir() || filepath.Ext(path) != ".json" {
 			return nil
 		}
 		t.Run(d.Name(), func(t *testing.T) {
