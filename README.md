@@ -24,7 +24,7 @@ func main() {
 	p := policy.Policy{
 		Version: policy.VersionLatest,
 		Id:      "CloudTrailBucketPolicy",
-		Statements: []policy.Statement{
+		Statements: policy.NewStatementOrSlice([]policy.Statement{
 			{
 				Sid:       "AWSCloudTrailWrite20150319",
 				Effect:    policy.EffectAllow,
@@ -44,7 +44,7 @@ func main() {
 				Action:    policy.NewStringOrSlice(true, "s3:GetBucketAcl"),
 				Resource:  policy.NewStringOrSlice(true, "arn:aws:s3:::examplebucket"),
 			},
-		},
+		}...),
 	}
 	out, _ := json.MarshalIndent(p, "", "\t")
 	fmt.Println(string(out))
@@ -89,13 +89,21 @@ will output
 
 ## Safety
 
-You can use strict JSON decoding functionality to ensure that the JSON document
-has a valid structure according to this package. Strict decoding functionality
-is not enabled by default because it is possible that the IAM policy grammar
-could be extended in the future to include new fields.
+Because the `Statement` of an IAM policy can be either an object or a list of
+objects, a custom `UnmarshalJSON()` method is implemented. Go's JSON decoder
+does not support passing decoding options such as `DisallowUnknownFields`
+([golang/go#41144]). In order to fail closed, the custom `UnmarshalJSON()`
+function on `Statement` sets `DisallowUnknownFields` when deserializing the
+incoming JSON.
+
+[golang/go#41144]: https://github.com/golang/go/issues/41144
+
+For the outer `Policy`, you can use strict JSON decoding functionality to
+ensure that the JSON document has a valid structure according to this package.
 
 If you are modifying an existing policy document, or if you are using a policy
-document that you did not create, you can enable strict decoding by setting the `DisallowUnknownFields` field on a custom `json.Decoder`.
+document that you did not create, you can enable strict decoding by setting the
+`DisallowUnknownFields` field on a custom `json.Decoder`.
 
 The following example will fail because the JSON document has a hypothetical
 new field `"Foo"` that is not part of the IAM policy statement grammar.
@@ -103,9 +111,9 @@ new field `"Foo"` that is not part of the IAM policy statement grammar.
 ```go
 invalidPolicyJSON := []byte(`{
   "Id": "CloudTrailBucketPolicy",
+  "Foo": "hypothetical new field",
   "Statement": [
     {
-      "Foo": "hypothetical new field",
       "Sid": "AWSCloudTrailWrite20150319",
       "Effect": "Allow",
       "Principal": {

@@ -1,3 +1,4 @@
 *.swp
 cover.out
 .vscode/
+policy/test_fixtures/managed-policies/

@@ -12,7 +12,7 @@ func Example_newBucketPolicy() {
 	p := policy.Policy{
 		Version: policy.VersionLatest,
 		Id:      "CloudTrailBucketPolicy",
-		Statements: []policy.Statement{
+		Statements: policy.NewStatementOrSlice([]policy.Statement{
 			{
 				Sid:       "AWSCloudTrailWrite20150319",
 				Effect:    policy.EffectAllow,
@@ -32,7 +32,7 @@ func Example_newBucketPolicy() {
 				Action:    policy.NewStringOrSlice(true, "s3:GetBucketAcl"),
 				Resource:  policy.NewStringOrSlice(true, "arn:aws:s3:::examplebucket"),
 			},
-		},
+		}...),
 	}
 	out, _ := json.MarshalIndent(p, "", "\t")
 	fmt.Println(string(out))
@@ -93,9 +93,9 @@ func Example_strictJSONDecoding() {
 
 	invalidPolicyJSON := []byte(`{
 		"Id": "CloudTrailBucketPolicy",
+		"Foo": "hypothetical new field",
 		"Statement": [
 			{
-				"Foo": "hypothetical new field",
 				"Sid": "AWSCloudTrailWrite20150319",
 				"Effect": "Allow",
 				"Principal": {
