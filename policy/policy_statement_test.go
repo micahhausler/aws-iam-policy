@@ -230,3 +230,47 @@ func TestStatementOrSliceUnmarshalJSON(t *testing.T) {
 		})
 	}
 }
+
+func TestStatementOrSliceMarshalJSON(t *testing.T) {
+	cases := []struct {
+		name         string
+		in           *StatementOrSlice
+		want         string
+		wantSingular bool
+	}{
+		{
+			name: "SingleStatement",
+			in: NewSingularStatementOrSlice(Statement{
+				Effect:   EffectAllow,
+				Action:   NewStringOrSlice(true, "s3:GetObject"),
+				Resource: NewStringOrSlice(true, "arn:aws:s3:::my_corporate_bucket/exampleobject.png"),
+			}),
+			want:         `{"Action":"s3:GetObject","Effect":"Allow","Resource":"arn:aws:s3:::my_corporate_bucket/exampleobject.png"}`,
+			wantSingular: true,
+		},
+		{
+			name: "SliceStatement",
+			in: NewStatementOrSlice(Statement{
+				Effect:   EffectAllow,
+				Action:   NewStringOrSlice(true, "s3:GetObject"),
+				Resource: NewStringOrSlice(true, "arn:aws:s3:::my_corporate_bucket/exampleobject.png"),
+			}),
+			want:         `[{"Action":"s3:GetObject","Effect":"Allow","Resource":"arn:aws:s3:::my_corporate_bucket/exampleobject.png"}]`,
+			wantSingular: false,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			b, err := tc.in.MarshalJSON()
+			if err != nil {
+				t.Fatalf("expect no error, got %v", err)
+			}
+			if string(b) != tc.want {
+				t.Errorf("got '%s', want '%s'", string(b), tc.want)
+			}
+			if tc.wantSingular != tc.in.Singular() {
+				t.Errorf("got '%t', want '%t'", tc.in.Singular(), tc.wantSingular)
+			}
+		})
+	}
+}
