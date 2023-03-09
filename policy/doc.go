@@ -14,8 +14,8 @@ Here is an example that creates a policy document using this package.
 
 	func main() {
 		p := policy.Policy{
-			Version: "2012-10-17",
-			Statements: []policy.Statement{
+			Version: policy.VersionLatest,
+			Statements: policy.NewStatementOrSlice([]policy.Statement{
 				{
 					Sid:       "S3Access",
 					Effect:    policy.EffectAllow,
@@ -24,7 +24,7 @@ Here is an example that creates a policy document using this package.
 					Resource:  policy.NewStringOrSlice(true, "arn:aws:s3:::examplebucket/AWSLogs/123456789012/*"),
 				},
 			},
-		}
+		}...)
 		b, err := json.MarshalIndent(p, "", "  ")
 		if err != nil {
 			panic(err)
