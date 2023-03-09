@@ -73,21 +73,17 @@ func Example_newBucketPolicy() {
 }
 
 /*
-This is an example of how to use the strict JSON decoding
-functionality to ensure that the JSON document is valid
-according to this package.
+This is an example of how to use the strict JSON decoding functionality to
+ensure that the JSON document is valid according to this package.
 
-The strict decoding functionality is not enabled by default
-because it is possible that the IAM policy grammar will be
-extended in the future to include new fields.
+The strict decoding functionality is enabled by default on StatementOrSlice
+because it implements a custom UnmarshalJSON method. If you are modifying an
+existing policy document, or if you are using a policy document that you did
+not create, you can enable strict decoding by setting the DisallowUnknownFields
+field on a custom json.Decoder.
 
-If you are modifying an existing policy document, or if you are
-using a policy document that you did not create, you can enable
-strict decoding by setting the DisallowUnknownFields field on a
-custom json.Decoder.
-
-This example will fail because the JSON document has a hypothetical
-new field "Foo" that is not part of the IAM policy statement grammar.
+This example will fail because the JSON document has a hypothetical new field
+"Foo" that is not part of the IAM policy statement grammar.
 */
 func Example_strictJSONDecoding() {
 
