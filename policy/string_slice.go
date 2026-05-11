@@ -2,6 +2,7 @@ package policy
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"errors"
 	"slices"
@@ -101,5 +102,20 @@ func (s *StringOrSlice) Equal(other *StringOrSlice) bool {
 	if other == nil {
 		return len(s.values) == 0
 	}
-	return slices.Equal(s.values, other.values)
+	return slicesEqualSorted(s.values, other.values)
+}
+
+func slicesEqualSorted[T cmp.Ordered](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	// Create copies to avoid mutating original data
+	aCopy := slices.Clone(a)
+	bCopy := slices.Clone(b)
+
+	slices.Sort(aCopy)
+	slices.Sort(bCopy)
+
+	return slices.Equal(aCopy, bCopy)
 }

@@ -55,7 +55,7 @@ type ConditionValue struct {
 
 // Equal returns true if the ConditionValue is equal to the other ConditionValue.
 func (c *ConditionValue) Equal(other *ConditionValue) bool {
-	return slices.Equal(c.strValues, other.strValues) &&
+	return slicesEqualSorted(c.strValues, other.strValues) &&
 		slices.Equal(c.boolValues, other.boolValues) &&
 		slices.Equal(c.numValues, other.numValues)
 }

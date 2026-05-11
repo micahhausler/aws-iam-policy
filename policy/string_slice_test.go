@@ -203,7 +203,7 @@ func TestStringOrSliceEqual(t *testing.T) {
 			name: "DifferentOrder",
 			a:    NewStringOrSlice(false, "a", "b"),
 			b:    NewStringOrSlice(false, "b", "a"),
-			want: false,
+			want: true,
 		},
 		{
 			name: "SingularEqualSlice",

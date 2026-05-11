@@ -313,6 +313,12 @@ func TestConditionValueEqual(t *testing.T) {
 			b:    NewConditionValueFloat(false, 1.0),
 			want: true,
 		},
+		{
+			name: "DifferentStringOrder",
+			a:    NewConditionValueString(false, "a", "b", "c"),
+			b:    NewConditionValueString(false, "c", "a", "b"),
+			want: true,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
