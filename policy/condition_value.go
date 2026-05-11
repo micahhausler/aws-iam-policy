@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"slices"
 	"strings"
 )
 
@@ -56,8 +55,20 @@ type ConditionValue struct {
 // Equal returns true if the ConditionValue is equal to the other ConditionValue.
 func (c *ConditionValue) Equal(other *ConditionValue) bool {
 	return slicesEqualSorted(c.strValues, other.strValues) &&
-		slices.Equal(c.boolValues, other.boolValues) &&
-		slices.Equal(c.numValues, other.numValues)
+		slicesEqualSorted(boolsToInts(c.boolValues), boolsToInts(other.boolValues)) &&
+		slicesEqualSorted(c.numValues, other.numValues)
+}
+
+// boolsToInts converts a bool slice to an int slice (false=0, true=1)
+// so it can be passed to slicesEqualSorted.
+func boolsToInts(b []bool) []int {
+	out := make([]int, len(b))
+	for i, v := range b {
+		if v {
+			out[i] = 1
+		}
+	}
+	return out
 }
 
 // AddStrings adds a slice of strings to the ConditionValue. If the

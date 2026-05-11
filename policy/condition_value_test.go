@@ -319,6 +319,18 @@ func TestConditionValueEqual(t *testing.T) {
 			b:    NewConditionValueString(false, "c", "a", "b"),
 			want: true,
 		},
+		{
+			name: "DifferentBoolOrder",
+			a:    NewConditionValueBool(false, true, false),
+			b:    NewConditionValueBool(false, false, true),
+			want: true,
+		},
+		{
+			name: "DifferentFloatOrder",
+			a:    NewConditionValueFloat(false, 3.0, 1.0, 2.0),
+			b:    NewConditionValueFloat(false, 1.0, 2.0, 3.0),
+			want: true,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
