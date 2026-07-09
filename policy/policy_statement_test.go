@@ -559,6 +559,28 @@ func TestStatementOrSliceEqual(t *testing.T) {
 	}
 }
 
+func TestNilStatementOrSlice(t *testing.T) {
+	cases := []struct {
+		name string
+		a    *StatementOrSlice
+		want bool
+	}{
+		{
+			name: "NotNilStatementOrSlice",
+			a:    NewStatementOrSlice(),
+			want: false,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.a.Values() == nil
+			if got != tc.want {
+				t.Errorf("got '%t', want '%t'", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestPolicyEqual(t *testing.T) {
 	cases := []struct {
 		name string

@@ -112,6 +112,13 @@ func NewSingularStatementOrSlice(statements Statement) *StatementOrSlice {
 
 // NewStatementOrSlice creates a new StatementOrSlice with a slice of Statements.
 func NewStatementOrSlice(statements ...Statement) *StatementOrSlice {
+	if len(statements) == 0 {
+		return &StatementOrSlice{
+			values:   []Statement{},
+			singular: false,
+		}
+	}
+
 	return &StatementOrSlice{
 		values:   statements,
 		singular: false,
